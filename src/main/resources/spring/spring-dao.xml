@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans">
+    <!--配置整合mybatis-->
+
+    <!--引入数据库配置文件-->
+    <util:properties location="classpath:jdbc.properties" id="envFile"/>
+
+    <bean id="dataSource" destroy-method="close" init-method="init" class="com.alibaba.druid.pool.DruidDataSource">
+        <property value="#{envFile['ds.driverClassName']}" name="driverClassName"/>
+        <property value="#{envFile['ds.url']}" name="url"/>
+        <property value="#{envFile['ds.username']}" name="username"/>
+        <property value="#{envFile['ds.password']}" name="password"/>
+        <!-- 配置初始化大小、最小、最大 -->
+        <property value="#{envFile['ds.initialSize']?:1}" name="initialSize"/>
+        <property value="#{envFile['ds.minIdle']?:1}" name="minIdle"/>
+        <property value="#{envFile['ds.maxActive']?:25}" name="maxActive"/>
+        <!-- 配置获取连接等待超时的时间 单位毫秒-->
+        <property value="#{envFile['ds.maxWait']?:6000}" name="maxWait"/>
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property value="#{envFile['ds.timeBetweenEvictionRunsMillis']?:60000}" name="timeBetweenEvictionRunsMillis"/>
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property value="#{envFile['ds.minEvictableIdleTimeMillis']?:25200000}" name="minEvictableIdleTimeMillis"/>
+        <!-- 打开removeAbandoned功能 -->
+        <property value="true" name="removeAbandoned"/>
+        <!-- 1800秒，也就是30分钟 -->
+        <property value="1800" name="removeAbandonedTimeout"/>
+        <property value="#{envFile['ds.testWhileIdle']?:true}" name="testWhileIdle"/>
+        <property value="#{envFile['ds.testOnBorrow']?:false}" name="testOnBorrow"/>
+        <property value="#{envFile['ds.testOnReturn']?:false}" name="testOnReturn"/>
+        <property value="#{envFile['ds.validationQuery']?:'select 1'}" name="validationQuery"/>
+        <property value="#{envFile['ds.validationQueryTimeout']?:5}" name="validationQueryTimeout"/>
+        <property value="#{envFile['ds.filters']?:'mergeStat,slf4j'}" name="filters"/>
+        <property value="#{envFile['ds.poolPreparedStatements']?:false}" name="poolPreparedStatements"/>
+    </bean>
+    <!--3.配置SqlSessionFactory工厂-->
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入数据库连接池-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--配置mubatis全局配置文件mybatis-config.xml-->
+        <property value="classpath:mybatis-config.xml" name="configLocation"/>
+        <!--扫描entity包使用别名 org.seckill.entity.** > **-->
+        <property value="com.demo.bean" name="typeAliasesPackage"/>
+        <!--扫描sql配置文件:mapper需要的xml文件-->
+        <!--<property value="classpath:mapper/*.xml" name="mapperLocations"/>-->
+        <property value="classpath:mapper/EmployeeDaoMapper.xml" name="mapperLocations"/>
+    </bean>
+    <!--4.配置扫描dao接口包,动态实现dao接口并注入到容器中-->
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--注入sqlSessionFactory-->
+        <property value="sqlSessionFactory" name="sqlSessionFactoryBeanName"/>
+        <!--给出扫描dao接口包-->
+        <property value="com.demo.dao" name="basePackage"/>
+    </bean>
+</beans>

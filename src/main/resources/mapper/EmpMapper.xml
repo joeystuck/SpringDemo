@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.wf.member.dao.mysql.EmpDao">
+	
+	<sql id="empColumns">
+		t.empno,
+		t.ename,
+		t.job,
+		t.mgr,
+		t.hiredate,
+		t.sal,
+		t.comm,
+		t.deptno
+	</sql>
+	
+
+	
+	<select id="get" resultType="emp">
+		SELECT <include refid="empColumns"/> FROM emp t WHERE empno = #{empno}
+	</select>
+	<select id="findList" resultType="emp">
+		SELECT t1.* ,t2.grade FROM emp t1 LEFT JOIN salgrade t2 ON t1.sal BETWEEN t2.losal AND t2.hisal
+		where 1=1
+		<if test="p.empno != null">
+			AND t1.empno = #{p.empno}
+		</if>
+		<if test="p.grade != null">
+			AND t2.grade = #{p.grade}
+		</if>
+		<if test="p.deptno != null">
+			AND t1.deptno = #{p.deptno}
+		</if>
+		ORDER BY t1.empno DESC LIMIT #{start}, #{length}
+	</select>
+	<select id="count" resultType="long">
+		SELECT COUNT(*) FROM emp t
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO emp (
+			empno,
+			ename,
+			job,
+			mgr,
+		    hiredate,
+		    sal,
+		    comm,
+		    deptno
+		) VALUES (
+			#{empno},
+			#{ename},
+			#{job},
+			#{mgr},
+			#{hiredate},
+			#{sal},
+			#{comm},
+			#{deptno}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE emp SET
+			ename = #{ename},
+			job = #{job},
+			mgr = #{mgr},
+			hiredate = #{hiredate},
+			sal = #{sal},
+			comm = #{comm},
+			deptno = #{deptno}
+		WHERE empno = #{empno}
+	</update>
+
+	<delete id="delete">
+		DELETE from emp  WHERE empno = #{empno}
+	</delete>
+
+
+	<select id="getAll" resultType="emp">
+		SELECT * FROM emp t
+	</select>
+
+
+</mapper>
+

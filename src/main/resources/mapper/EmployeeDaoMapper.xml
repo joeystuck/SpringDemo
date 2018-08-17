@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.dao.EmployeeDao">
+    <!-- 查询所有 -->
+    <resultMap id="getAllListMap" type="com.demo.bean.Employee" autoMapping="true">
+        <id column="empno" property="empno" jdbcType="INTEGER"/>
+        <result column="ename" property="ename" jdbcType="VARCHAR"/>
+        <result column="job" property="job" jdbcType="VARCHAR"/>
+        <result column="mgrname" property="mgrname" jdbcType="VARCHAR"/>
+        <result column="hiredate" property="hiredate" jdbcType="VARCHAR"/>
+        <result column="sal" property="sal" jdbcType="DECIMAL"/>
+        <result column="grade" property="grade" jdbcType="INTEGER"/>
+        <result column="comm" property="comm" jdbcType="DECIMAL"/>
+        <result column="dname" property="dname" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="getAll" parameterType="com.demo.bean.Employee" resultMap="getAllListMap">
+        select
+            e.empno,
+            e.ename,
+            e.job,
+            m.ename mgrname,
+            e.hiredate,
+            e.sal,
+            s.grade,
+            e.comm,
+            d.dname
+        from emp e left join emp m on e.mgr=m.empno,dept d ,salgrade s
+        where e.deptno=d.deptno
+        and e.sal between s.losal and s.hisal
+        ORDER by e.empno asc;
+    </select>
+    <!-- 根据雇员名查询雇员编号 -->
+    <select id="getmgr" parameterType="string" resultType="int">
+        select empno from emp where ename=#{mgrname};
+    </select>
+    <!-- 根据部门名称查询部门编号 -->
+    <select id="getdeptno" parameterType="string" resultType="int">
+        select deptno from dept where dname=#{dname};
+    </select>
+    <!-- 根据雇员编号查询雇员名 -->
+    <select id="getMgrName" parameterType="int" resultType="string">
+        select ename from emp where empno=#{mgr};
+    </select>
+    <!-- 根据部门名称查询部门编号 -->
+    <select id="getDname" parameterType="int" resultType="string">
+        select dname from dept where deptno=#{deptno};
+    </select>
+
+    <!-- 新增数据 -->
+    <!--所有上级-->
+    <select id="getEname" parameterType="com.demo.bean.Employee" resultType="com.demo.bean.Employee">
+        select ename from emp;
+    </select>
+    <!--所有部门-->
+    <select id="getAllDept" parameterType="com.demo.bean.Department" resultType="com.demo.bean.Department">
+        select * from dept ;
+    </select>
+    <!--添加员工-->
+    <insert id="insert" parameterType="com.demo.bean.Employee">
+        INSERT INTO emp (
+			empno,
+			ename,
+			job,
+			mgr,
+			hiredate,
+		    sal,
+		    comm,
+		    deptno
+		) VALUES (
+			#{empno},
+			#{ename},
+			#{job},
+			#{mgr},
+			#{hiredate},
+			#{sal},
+			#{comm},
+			#{deptno}
+		);
+    </insert>
+<!--添加boss
+    <insert id="insert" parameterType="com.demo.bean.Employee">
+
+    </insert>-->
+
+    <!-- 新增部门 -->
+    <insert id="insertDept" parameterType="com.demo.bean.Department">
+        insert into dept (deptno,dname,loc) values (#{deptno},#{dname},#{loc});
+    </insert>
+    <!-- 根据ID查询单个 -->
+    <select id="getOneByEmpno" resultType="com.demo.bean.Employee">
+        select * from emp where empno=#{empno};
+    </select>
+    <!-- 修改数据 -->
+    <update id="update" parameterType="com.demo.bean.Employee" >
+        update emp set
+         ename=#{ename},job=#{job},
+        mgr= #{mgr},
+        sal=#{sal},comm=#{comm},
+		deptno=#{deptno}
+         where (empno=#{empno});
+    </update>
+    <!-- 删除数据 -->
+    <delete id="deleteByEmpno" parameterType="int" >
+        delete from emp where empno=#{empno};
+    </delete>
+    <!-- 查询所有 -->
+    <select id="getCount" parameterType="com.demo.bean.Employee" resultType="int">
+        select count(*) from emp;
+    </select>
+    <!-- 分页查询 -->
+    <select id="findAll" parameterType="map" resultMap="getAllListMap">
+        select
+            e.empno,
+            e.ename,
+            e.job,
+            m.ename mgrname,
+            e.hiredate,
+            e.sal,
+            s.grade,
+            e.comm,
+            d.dname
+        from emp e left join emp m on e.mgr=m.empno,dept d ,salgrade s
+        where e.deptno=d.deptno
+        and e.sal between s.losal and s.hisal
+        ORDER by e.empno asc
+        limit #{currIndex},#{pageSize};
+    </select>
+    <!-- 排序 -->
+        <!-- 升序 -->
+    <select id="asc" parameterType="map" resultType="com.demo.bean.Employee">
+        select
+            e.empno,
+            e.ename,
+            e.job,
+            m.ename mgrname,
+            e.hiredate,
+            e.sal,
+            s.grade,
+            e.comm,
+            d.dname
+        from emp e left join emp m on e.mgr=m.empno,dept d ,salgrade s,
+              (select * from emp limit #{currIndex},#{pageSize}) p
+        where e.empno=p.empno
+        and e.deptno=d.deptno
+        and e.sal between s.losal and s.hisal
+        ORDER by e.empno asc;
+    </select>
+        <!-- 降序 -->
+    <select id="desc" parameterType="map" resultType="com.demo.bean.Employee">
+        select
+            e.empno,
+            e.ename,
+            e.job,
+            m.ename mgrname,
+            e.hiredate,
+            e.sal,
+            s.grade,
+            e.comm,
+            d.dname
+        from emp e left join emp m on e.mgr=m.empno,dept d ,salgrade s,
+              (select * from emp limit #{currIndex},#{pageSize}) p
+        where e.empno=p.empno
+        and e.deptno=d.deptno
+        and e.sal between s.losal and s.hisal
+        order by e.empno desc;
+    </select>
+</mapper>
