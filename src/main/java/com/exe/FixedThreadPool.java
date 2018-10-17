@@ -3,7 +3,7 @@ package com.exe;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class fixedThreadPool {
+public class FixedThreadPool {
     public static void main(String[] args) {
         /**
          * 2、Executors.newFixedThreadPool(int) 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。
